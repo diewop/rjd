@@ -292,7 +292,15 @@ int main(int argc, char *argv[]){
 			}
 		
 	}
+	
 	close(fd);   /* cerramos fd =) */
-
+	/*Impresión mensaje*/
+	time_t tiempo = time(0);
+	struct tm *tlocal = localtime(&tiempo);
+	char output[128];
+	strftime(output,128,"%d/%m/%y %H:%M:%S",tlocal);
+	printf("%s ",output);
+	printf("%s ",op);
+	printf("%d\n",codigoUsuario);
 	return 0;
 }
