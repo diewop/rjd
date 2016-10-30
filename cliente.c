@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <time.h>   //fecha y hora
 
 
 #define PORT 3550         
@@ -142,138 +143,154 @@ int main(int argc, char *argv[]){
 	
 	}
 	totalDisponible = atoi(buf);
-	if(totalDisponible>5000 || (strcmp(op,"d"))){
-		//Bienvenido
-		printf("Cajero Total Disponible: %s\n",buf);
+	if(( monto<=3000 ) | (!strcmp(op,"d"))){
+		if(totalDisponible>5000 | (!strcmp(op,"d") )){
+			//Bienvenido
+			printf("Cajero Total Disponible: %s\n",buf);
 	
-		//Envio Codigo Usuario
-		sprintf(it, "%d", codigoUsuario);
-		strcpy(str,it);
-		strcat(str,"\0");
+			//Envio Codigo Usuario
+			sprintf(it, "%d", codigoUsuario);
+			strcpy(str,it);
+			strcat(str,"\0");
 
-		if(send(fd, str, 25, 0) == -1){
 			if(send(fd, str, 25, 0) == -1){
 				if(send(fd, str, 25, 0) == -1){
-					// llamada a send
-					perror(" error en send \n");
-					exit(-1);
+					if(send(fd, str, 25, 0) == -1){
+						// llamada a send
+						perror(" error en send \n");
+						exit(-1);
+					}
 				}
 			}
-		}
 	
-		printf("Codigo Usuario\n");
+			printf("Codigo Usuario\n");
 
-		//Recibo Validez Usuario
-		if ((numbytes=recv(fd, buf, MAXDATASIZE, 0)) == -1){  
+			//Recibo Validez Usuario
+			if ((numbytes=recv(fd, buf, MAXDATASIZE, 0)) == -1){  
+				/* llamada a recv() */
+				perror(" error recv \n");
+				exit(-1);
+			}
+			if(strcmp(buf,"Usuario Válido\n")){
+				perror(" Error Usuario Inválido ");
+				exit(-1);
+	
+			}
+			buf[numbytes]='\0';
+			printf("%s\n",buf);
+	
+			//Envio Operación
+			strcpy(str,op);
+			strcat(str,"\0");
+	
+			if(send(fd, str, 25, 0) == -1){
+				if(send(fd, str, 25, 0) == -1){
+					if(send(fd, str, 25, 0) == -1){
+						// llamada a send
+						perror(" error en send \n");
+						exit(-1);
+					}
+				}
+			}
+	
+			//Recibo Validez de la Operación
+			if ((numbytes=recv(fd, buf, MAXDATASIZE, 0)) == -1){  
+				/* llamada a recv() */
+				perror(" error recv \n");
+				exit(-1);
+			}
+			if(strcmp(buf,"OK\n")){
+				perror(" Error Operación Inválida ");
+				exit(-1);
+	
+			}
+			buf[numbytes]='\0';
+			printf("%s",buf);
+	
+			//Envío Monto
+			sprintf(it, "%d", monto);
+			strcpy(str,it);
+			strcat(str,"\0");
+	
+			if(send(fd, str, 25, 0) == -1){
+				if(send(fd, str, 25, 0) == -1){
+					if(send(fd, str, 25, 0) == -1){
+						// llamada a send
+						perror(" error en send \n");
+						exit(-1);
+					}
+				}
+			}
+	
+			//Recibo Validez del Monto
+			if ((numbytes=recv(fd, buf, MAXDATASIZE, 0)) == -1){  
 			/* llamada a recv() */
-			perror(" error recv \n");
-			exit(-1);
-		}
-		if(strcmp(buf,"Usuario Válido\n")){
-			perror(" Error Usuario Inválido ");
-			exit(-1);
-	
-		}
-		buf[numbytes]='\0';
-		printf("%s\n",buf);
-	
-		//Envio Operación
-		strcpy(str,op);
-		strcat(str,"\0");
-	
-		if(send(fd, str, 25, 0) == -1){
-			if(send(fd, str, 25, 0) == -1){
-				if(send(fd, str, 25, 0) == -1){
-					// llamada a send
-					perror(" error en send \n");
-					exit(-1);
-				}
+				perror(" error recv \n");
+				exit(-1);
 			}
-		}
-	
-		//Recibo Validez de la Operación
-		if ((numbytes=recv(fd, buf, MAXDATASIZE, 0)) == -1){  
-			/* llamada a recv() */
-			perror(" error recv \n");
-			exit(-1);
-		}
-		if(strcmp(buf,"OK\n")){
-			perror(" Error Operación Inválida ");
-			exit(-1);
-	
-		}
-		buf[numbytes]='\0';
-		printf("%s",buf);
-	
-		//Envío Monto
-		sprintf(it, "%d", monto);
-		strcpy(str,it);
-		strcat(str,"\0");
-	
-		if(send(fd, str, 25, 0) == -1){
-			if(send(fd, str, 25, 0) == -1){
-				if(send(fd, str, 25, 0) == -1){
-					// llamada a send
-					perror(" error en send \n");
-					exit(-1);
-				}
-			}
-		}
-	
-		//Recibo Validez del Monto
-		if ((numbytes=recv(fd, buf, MAXDATASIZE, 0)) == -1){  
-		/* llamada a recv() */
-			perror(" error recv \n");
-			exit(-1);
-		}
 
-		if(strcmp(buf,"Hecho?\n")){
-			perror(" Error Monto Inválido ");
-			exit(-1);
+			if(strcmp(buf,"Hecho?\n")){
+				perror(" Error Monto Inválido ");
+				exit(-1);
 	
-		}
+			}
 	
-		buf[numbytes]='\0';
-		printf("%s\n",buf);
+			buf[numbytes]='\0';
+			printf("%s\n",buf);
 	
-		//Envio Confirmación
-		strcpy(str,"He realizado la operación");
-		strcat(str,"\0");
+			//Envio Confirmación
+			strcpy(str,"He realizado la operación");
+			strcat(str,"\0");
 	
-		if(send(fd, str, 26, 0) == -1){
 			if(send(fd, str, 26, 0) == -1){
 				if(send(fd, str, 26, 0) == -1){
-					// llamada a send
-					perror(" error en send \n");
-					exit(-1);
+					if(send(fd, str, 26, 0) == -1){
+						// llamada a send
+						perror(" error en send \n");
+						exit(-1);
+					}
 				}
 			}
-		}
 
-		//Recibo Confirmación final
-		//OJO REVISAR BLOQUEANTE
-		if ((numbytes=recv(fd, buf, MAXDATASIZE, 0)) == -1){  
-		/* llamada a recv() */
-			printf("No recibí confirmación\n");
-		}else{
-			//Imprimo mensaje de éxito
-			buf[numbytes]='\0';
-			printf("\n%s\n",buf);
-		}
+			//Recibo Confirmación final
+			//OJO REVISAR BLOQUEANTE
+			if ((numbytes=recv(fd, buf, MAXDATASIZE, 0)) == -1){  
+			/* llamada a recv() */
+				printf("No recibí confirmación\n");
+			}else{
+				//Imprimo mensaje de éxito
+				buf[numbytes]='\0';
+				printf("\n%s\n",buf);
+			}
 	
-	}else{
-		printf("\nDinero no Disponible\n");
-		strcpy(str,"Necesito Recarga");
-		if(send(fd, str, 25, 0) == -1){
+		}else{
+			printf("\nDinero no Disponible\n");
+			strcpy(str,"Necesito Recarga");
 			if(send(fd, str, 25, 0) == -1){
 				if(send(fd, str, 25, 0) == -1){
-					// llamada a send
-					perror(" error en send \n");
-					exit(-1);
+					if(send(fd, str, 25, 0) == -1){
+						// llamada a send
+						perror(" error en send \n");
+						exit(-1);
+					}
 				}
 			}
-		}
-	
+		}//else de totalDisponible<= 5000 o deposito;
+	}
+	//monto>3000 o deposito
+	else{
+		printf("\nDinero no Disponible\n");
+		strcpy(str,"Monto Por Encima");
+			if(send(fd, str, 25, 0) == -1){
+				if(send(fd, str, 25, 0) == -1){
+					if(send(fd, str, 25, 0) == -1){
+						// llamada a send
+						perror(" error en send \n");
+						exit(-1);
+					}
+				}
+			}
+		
 	}
 	close(fd);   /* cerramos fd =) */
 
