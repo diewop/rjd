@@ -25,3 +25,15 @@
 	* -o bitacora_retiro (Ruta del archivo donde estarán los retiros)
 
 
+#### Impresión del Cajero
+	fecha hora Op codigoUsuario
+
+
+
+### Decisiones
+	1. Si el total disponible del cajero es menor o igual a 5000, entonces
+	dirá al usuario: "Dinero No Disponible" y le envía al servidor
+	"Necesito recarga". Para la siguiente vez que se llame a ese cajero estará
+	recargado.
+
+
