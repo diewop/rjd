@@ -146,7 +146,7 @@ int main(int argc, char *argv[]){
 	if(( monto<=3000 ) | (!strcmp(op,"d"))){
 		if(totalDisponible>5000 | (!strcmp(op,"d") )){
 			//Bienvenido
-			printf("Cajero Total Disponible: %s\n",buf);
+			//printf("Cajero Total Disponible: %s\n",buf);
 	
 			//Envio Codigo Usuario
 			sprintf(it, "%d", codigoUsuario);
@@ -163,7 +163,7 @@ int main(int argc, char *argv[]){
 				}
 			}
 	
-			printf("Codigo Usuario: %s\n",it);
+			//printf("Codigo Usuario: %s\n",it);
 
 			//Recibo Validez Usuario
 			if ((numbytes=recv(fd, buf, MAXDATASIZE, 0)) == -1){  
@@ -172,12 +172,13 @@ int main(int argc, char *argv[]){
 				exit(-1);
 			}
 			if(strcmp(buf,"Usuario Válido\n")){
-				perror(" Error Usuario Inválido ");
+				printf(" Error Usuario Inválido ");
+				close(fd);
 				exit(-1);
 			}
 			
 			buf[numbytes]='\0';
-			printf("%s\n",buf);
+			//printf("%s\n",buf);
 	
 			//Envio Operación
 			strcpy(str,op);
@@ -200,13 +201,13 @@ int main(int argc, char *argv[]){
 				exit(-1);
 			}
 			if(strcmp(buf,"OK\n")){
-				perror(" Usuario ha alcanzado número Máximo de retiros ");
+				printf("\n\tUsuario ha alcanzado número Máximo de retiros\n\n");
 				close(fd);   /* cerramos fd =) */
 				exit(-1);
 	
 			}
 			buf[numbytes]='\0';
-			printf("%s",buf);
+			//printf("%s",buf);
 	
 			//Envío Monto
 			sprintf(it, "%d", monto);
@@ -237,15 +238,16 @@ int main(int argc, char *argv[]){
 			}
 	
 			buf[numbytes]='\0';
-			printf("%s\n",buf);
+			//printf("%s\n",buf);
 	
 			time_t tiempo = time(0);
 			struct tm *tlocal = localtime(&tiempo);
 			char output[128];
-			strftime(output,128,"%d/%m/%y %H:%M:%S",tlocal);
-			printf("%s ",output);
-			printf("%s ",op);
-			printf("%d\n",codigoUsuario);
+			printf("\n\tFecha\t\tHora\t\top\tcódigo\n");
+			strftime(output,128,"%d/%m/%y\t%H:%M:%S",tlocal);
+			printf("\t%s ",output);
+			printf("\t%s ",op);
+			printf("\t%d\n",codigoUsuario);
 			
 			//Envio Confirmación
 			strcpy(str,"He realizado la operación");
@@ -269,7 +271,7 @@ int main(int argc, char *argv[]){
 			}else{
 				//Imprimo mensaje de éxito
 				buf[numbytes]='\0';
-				printf("\n%s\n",buf);
+				printf("\n\n\t\t%s\n",buf);
 			}
 	
 		}else{

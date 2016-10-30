@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <time.h>   //fecha y hora
 
 #define MAX_CLIENTES 4  // Máximo números de clientes
 #define MAXDATASIZE 100	// El número máximo de datos en bytes
@@ -263,7 +264,7 @@ int main(int argc, char *argv[]){
 					printf("Tipo de operación %s\n",buf);
 					
 					//Número de intentos máximos
-					printf("\n\nNúmero de Intentos: %d**\n\n",userAux->intentos);
+					//printf("\n\nNúmero de Intentos: %d**\n\n",userAux->intentos);
 					if((userAux->intentos > MAX_INTENTOS) & (!strcmp(buf,"r"))){
 						printf("Usuario ha alcanzado máximo Número de retiros\n");
 						if(send(fd2,"MAX_ALC\n", 25, 0) == -1){
@@ -363,14 +364,26 @@ int main(int argc, char *argv[]){
 							}
 						}
 						userAux->intentos += 1;
-						printf("\nLLEGUÉ AL FINAL De Envíos\n");
-			
+						
+						time_t tiempo = time(0);
+						struct tm * tlocal = localtime(&tiempo);
+						char output[128];
+						printf("\n Fecha\t\tHora\t\tcódigo\tcajero\top\tmonto\tTotalDisponible\n");
+						strftime(output,128,"%d/%m/%y\t%H:%M:%S",tlocal);
+						printf(" %s ",output);
+						printf("\t%d",userAux->codigo);
+						printf("\t%s ",aux->id);
+						printf("\t%s ",str);
+						printf("\t%d ",monto);
+						printf("\t%lld\n",aux->totalDisponible);
+
+						
+						
 					}
 				}//Número de intentos máximos alcanzados
 			}//En caso que necesita recarga o sobrepase
 		}//Cierre de CajeroV
-		printf("\nLLEGUÉ AL FINAL\n");
-		sleep(2);
+		printf("\n\n\t\tMensaje Final\t\t\n");
 		cajeroV = 0;
 	}//While
 		
