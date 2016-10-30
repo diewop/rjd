@@ -1,0 +1,11 @@
+#Ignora los .o y a
+*.[oa]
+
+#Ignora los temporales
+*~
+
+#Ignora los .zip
+*.zip
+
+#Ignora
+servidor_prueba.c
