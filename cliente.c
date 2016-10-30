@@ -163,7 +163,7 @@ int main(int argc, char *argv[]){
 				}
 			}
 	
-			printf("Codigo Usuario\n");
+			printf("Codigo Usuario: %s\n",it);
 
 			//Recibo Validez Usuario
 			if ((numbytes=recv(fd, buf, MAXDATASIZE, 0)) == -1){  
@@ -174,8 +174,8 @@ int main(int argc, char *argv[]){
 			if(strcmp(buf,"Usuario Válido\n")){
 				perror(" Error Usuario Inválido ");
 				exit(-1);
-	
 			}
+			
 			buf[numbytes]='\0';
 			printf("%s\n",buf);
 	
@@ -200,7 +200,8 @@ int main(int argc, char *argv[]){
 				exit(-1);
 			}
 			if(strcmp(buf,"OK\n")){
-				perror(" Error Operación Inválida ");
+				perror(" Usuario ha alcanzado número Máximo de retiros ");
+				close(fd);   /* cerramos fd =) */
 				exit(-1);
 	
 			}
@@ -238,6 +239,14 @@ int main(int argc, char *argv[]){
 			buf[numbytes]='\0';
 			printf("%s\n",buf);
 	
+			time_t tiempo = time(0);
+			struct tm *tlocal = localtime(&tiempo);
+			char output[128];
+			strftime(output,128,"%d/%m/%y %H:%M:%S",tlocal);
+			printf("%s ",output);
+			printf("%s ",op);
+			printf("%d\n",codigoUsuario);
+			
 			//Envio Confirmación
 			strcpy(str,"He realizado la operación");
 			strcat(str,"\0");
@@ -264,7 +273,7 @@ int main(int argc, char *argv[]){
 			}
 	
 		}else{
-			printf("\nDinero no Disponible\n");
+			printf("\n\tDinero no Disponible\n\n");
 			strcpy(str,"Necesito Recarga");
 			if(send(fd, str, 25, 0) == -1){
 				if(send(fd, str, 25, 0) == -1){
@@ -279,7 +288,7 @@ int main(int argc, char *argv[]){
 	}
 	//monto>3000 o deposito
 	else{
-		printf("\nDinero no Disponible\n");
+		printf("\n\tLos Retiros son máximo hasta 3000\n\n");
 		strcpy(str,"Monto Por Encima");
 			if(send(fd, str, 25, 0) == -1){
 				if(send(fd, str, 25, 0) == -1){
@@ -295,12 +304,6 @@ int main(int argc, char *argv[]){
 	
 	close(fd);   /* cerramos fd =) */
 	/*Impresión mensaje*/
-	time_t tiempo = time(0);
-	struct tm *tlocal = localtime(&tiempo);
-	char output[128];
-	strftime(output,128,"%d/%m/%y %H:%M:%S",tlocal);
-	printf("%s ",output);
-	printf("%s ",op);
-	printf("%d\n",codigoUsuario);
+	
 	return 0;
 }

@@ -10,10 +10,10 @@
 #include <netinet/in.h>
 
 #define MAX_CLIENTES 4  // Máximo números de clientes
-#define MAXDATASIZE 100	/* El número máximo de datos en bytes */
+#define MAXDATASIZE 100	// El número máximo de datos en bytes
 #define TOTAL_INICIO 80000 // TotalDisponible Inicial.
+#define MAX_INTENTOS 3 //Máximo retiros permitidos por usuario
 
-//Estructura del Cajero
 struct cajero {
 	char		  id[9];
 	long long	  totalDisponible;
@@ -28,23 +28,43 @@ struct registro {
 	long long totalDisponible;
 	char exitoso[2];
 	char evento[2];
+	struct registro * next;
 };
 
-// Estructura para la lista de transacciones
-struct lista_transacciones {
-	struct registro  trans;
-	struct lista_transacciones* next;
-};
+
 
 struct usuario {
 	int codigo;
-	int intentos;
+	char intentos;
+	struct usuario *next;
 };
 
-struct lista_usuarios {
-	struct usuario  user;
-	struct lista_usuarios * next;
+struct usuario * searchLista(struct usuario * lista, char * id){
+	struct usuario * userAux =  malloc(sizeof(struct usuario));
+	char * str =  malloc(sizeof(char)*400);
+	userAux=lista;
+	sprintf(str,"%d",lista->codigo);
+	if(!strcmp(str,id)){
+		userAux = lista;
+		return userAux;	
+	}else{
+		while(userAux->next!=NULL){
+			userAux = userAux->next;
+			sprintf(str,"%d",userAux->codigo);
+			if(!strcmp(str,id)){
+				return userAux;
+			}
+		}
+		userAux->next = malloc(sizeof(struct usuario));
+		userAux = userAux->next;
+		userAux->codigo = atoi(id);
+		userAux->next = NULL;
+		userAux->intentos = 1;
+		return userAux;
+			
+	}
 };
+
 
 int main(int argc, char *argv[]){
 	//Suponiendo que todos los argumentos válidos
@@ -97,9 +117,14 @@ int main(int argc, char *argv[]){
 	strcpy(EME.id,"EME");
 	EME.totalDisponible = TOTAL_INICIO;
 
+	//Cajero Auxiliar, me servirá para acceder a la información de los cajeros.
+	struct cajero * aux; 
 	
-	struct cajero * aux;
-	
+	// Lista de Usuarios
+	struct usuario * lista = malloc(sizeof(struct usuario));
+	// Apuntador a Usuario Auxiliar
+	struct usuario * userAux = malloc(sizeof(struct usuario));
+
 
 	
 	int fd, fd2; /* los ficheros descriptores */
@@ -144,6 +169,8 @@ int main(int argc, char *argv[]){
 	}
 	char quien = 0; // Para guardar si paso por EME(3), CB1(1), CB2(2)
 	char caj [3]; //Para guardar el nombre de la caja
+	
+	struct usuario * user;
 	while(1){
 		sin_size=sizeof(struct sockaddr_in);
 		//Accept permitirá que algún cliente se conecte tras utilizar la función connect()
@@ -170,16 +197,19 @@ int main(int argc, char *argv[]){
 					}
 					printf("Cajero Inválido: %s\n",buf);
 				}else{
+					cajeroV = 1;
 					aux = &CB2; // Basico II
 				}
 			}else{
+				cajeroV = 1;
 				aux = &CB1; // Basico I
 			}
 		}else{
+			cajeroV = 1;
 			aux = &EME; // EME
 		} 
 		
-		cajeroV = 1;
+		
 		buf[numbytes] = '\0';
 
 		printf("%s\n",buf);
@@ -207,10 +237,12 @@ int main(int argc, char *argv[]){
 				aux->totalDisponible = TOTAL_INICIO;
 			}
 			else{
-				if(strcmp(buf,"Monto Por Encima")){
+				if(!strcmp(buf,"Monto Por Encima")){
 					buf[numbytes]='\0';
-					printf("Nombre del Usuario %s\n",buf);
-			
+					printf("Monto inválido %s\n",buf);
+				}else{
+					userAux = searchLista(lista,buf);
+					
 					//Envio de Usuario Válido			
 					if(send(fd2,"Usuario Válido\n", 25, 0) == -1){
 						if(send(fd2,"Usuario Válido\n", 25, 0) == -1){
@@ -220,9 +252,7 @@ int main(int argc, char *argv[]){
 							}
 						}
 					}
-			
 					printf("Envié Usuario Válido\n");
-			
 					//Recibo Operación
 					if((numbytes=recv(fd2, buf, MAXDATASIZE, 0)) == -1){
 						/* llamada a recv() */
@@ -230,98 +260,113 @@ int main(int argc, char *argv[]){
 						exit(-1);
 					}
 					buf[numbytes]='\0';
-			
 					printf("Tipo de operación %s\n",buf);
-			
-			
-					//Envio de Confirmación
-					if(send(fd2,"OK\n", 25, 0) == -1){
-					printf("Erro\n");
-						if(send(fd2,"OK\n", 25, 0) == -1){
-										printf("Erro2\n");
+					
+					//Número de intentos máximos
+					printf("\n\nNúmero de Intentos: %d**\n\n",userAux->intentos);
+					if((userAux->intentos > MAX_INTENTOS) & (!strcmp(buf,"r"))){
+						printf("Usuario ha alcanzado máximo Número de retiros\n");
+						if(send(fd2,"MAX_ALC\n", 25, 0) == -1){
 							if(send(fd2,"OK\n", 25, 0) == -1){
-											printf("Erro3\n");
-								perror(" error en send. Cliente perdido \n");
-								close(fd2);
+								if(send(fd2,"MAX_ALC\n", 25, 0) == -1){
+									perror(" error en send. Cliente perdido \n");
+									close(fd2);
+								}
 							}
-						}
-					}
-					printf("Envié OK\n");
+						}				
+					}else{
 			
-					strcpy(str,buf); //Tipo de Operación;
-					//Recibo Monto
-					if((numbytes=recv(fd2, buf, MAXDATASIZE, 0)) == -1){
-						/* llamada a recv() */
-						perror(" error en recv \n");
-						exit(-1);
-					}
-			
-					buf[numbytes]='\0';
-					printf("Monto %s\n",buf);
-					monto = atoi(buf);
-					if(!strcmp(str,"r")){
-						if(aux->totalDisponible<=5000){
-							//No debería pasar estp
-							if(send(fd2,"No suficiente\n", 25, 0) == -1){
-								perror(" error en send. Cliente perdido \n");
-								close(fd2);
-							}
-						}else{
-							aux->totalDisponible=aux->totalDisponible-monto;
-							//Envio Confirmación de confirmación
-							if(send(fd2,"Hecho?\n", 25, 0) == -1){
-								if(send(fd2,"Hecho?\n", 25, 0) == -1){
-									if(send(fd2,"Hecho?\n", 25, 0) == -1){
-										perror(" error en send. Cliente perdido \n");
-										close(fd2);
-									}
-				
+						//Envio de Confirmación
+						if(send(fd2,"OK\n", 25, 0) == -1){
+						printf("Erro\n");
+							if(send(fd2,"OK\n", 25, 0) == -1){
+											printf("Erro2\n");
+								if(send(fd2,"OK\n", 25, 0) == -1){
+												printf("Erro3\n");
+									perror(" error en send. Cliente perdido \n");
+									close(fd2);
 								}
 							}
 						}
-					}//cierre de retiro
-					if(!strcmp(str,"d")){
-						aux->totalDisponible = aux->totalDisponible+monto;
-						if(send(fd2,"Hecho?\n", 25, 0) == -1){
+						printf("Envié OK\n");
+			
+						strcpy(str,buf); //Tipo de Operación;
+					
+					
+					
+						//Recibo Monto
+						if((numbytes=recv(fd2, buf, MAXDATASIZE, 0)) == -1){
+							/* llamada a recv() */
+							perror(" error en recv \n");
+							exit(-1);
+						}
+			
+						buf[numbytes]='\0';
+						printf("Monto %s\n",buf);
+						monto = atoi(buf);
+						if(!strcmp(str,"r")){
+							if(aux->totalDisponible<=5000){
+								//No debería pasar estp
+								if(send(fd2,"No suficiente\n", 25, 0) == -1){
+									perror(" error en send. Cliente perdido \n");
+									close(fd2);
+								}
+							}else{
+								aux->totalDisponible=aux->totalDisponible-monto;
+								//Envio Confirmación de confirmación
 								if(send(fd2,"Hecho?\n", 25, 0) == -1){
 									if(send(fd2,"Hecho?\n", 25, 0) == -1){
-										perror(" error en send. Cliente perdido \n");
-										close(fd2);
-									}
+										if(send(fd2,"Hecho?\n", 25, 0) == -1){
+											perror(" error en send. Cliente perdido \n");
+											close(fd2);
+										}
 				
+									}
 								}
 							}
-					}
-			
-			
-					//Recibo Estado
-					if((numbytes=recv(fd2, buf, MAXDATASIZE, 0)) == -1){
-						/* llamada a recv() */
+						}//cierre de retiro
 						if(!strcmp(str,"d")){
-							aux->totalDisponible = aux->totalDisponible - monto;
-						}else{
-							aux->totalDisponible = aux->totalDisponible + monto;
+							aux->totalDisponible = aux->totalDisponible+monto;
+							if(send(fd2,"Hecho?\n", 25, 0) == -1){
+									if(send(fd2,"Hecho?\n", 25, 0) == -1){
+										if(send(fd2,"Hecho?\n", 25, 0) == -1){
+											perror(" error en send. Cliente perdido \n");
+											close(fd2);
+										}
+				
+									}
+								}
 						}
-						perror(" error en recv \n");
-						exit(-1);
-					}
-					buf[numbytes]='\0';
-					printf("Estado %s\n",buf);
 			
-					//MENSAJE DE ÉXITO
-					if(send(fd2,"Mensaje Éxito\n", 25, 0) == -1){
+			
+						//Recibo Estado
+						if((numbytes=recv(fd2, buf, MAXDATASIZE, 0)) == -1){
+							/* llamada a recv() */
+							if(!strcmp(str,"d")){
+								aux->totalDisponible = aux->totalDisponible - monto;
+							}else{
+								aux->totalDisponible = aux->totalDisponible + monto;
+							}
+							perror(" error en recv \n");
+							exit(-1);
+						}
+						buf[numbytes]='\0';
+						printf("Estado %s\n",buf);
+			
+						//MENSAJE DE ÉXITO
 						if(send(fd2,"Mensaje Éxito\n", 25, 0) == -1){
 							if(send(fd2,"Mensaje Éxito\n", 25, 0) == -1){
-								perror(" error en send. Cliente perdido \n");
-								close(fd2);
+								if(send(fd2,"Mensaje Éxito\n", 25, 0) == -1){
+									perror(" error en send. Cliente perdido \n");
+									close(fd2);
+								}
 							}
 						}
+						userAux->intentos += 1;
+						printf("\nLLEGUÉ AL FINAL De Envíos\n");
+			
 					}
-			
-
-					printf("\nLLEGUÉ AL FINAL De Envíos\n");
-			
-				}
+				}//Número de intentos máximos alcanzados
 			}//En caso que necesita recarga o sobrepase
 		}//Cierre de CajeroV
 		printf("\nLLEGUÉ AL FINAL\n");
