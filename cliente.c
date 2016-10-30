@@ -103,7 +103,6 @@ int main(int argc, char *argv[]){
 	server.sin_addr = *((struct in_addr *)he->h_addr);  
 	bzero(&(server.sin_zero),8);
 
-
 	//Conectando al servidor
 	if(connect(fd, (struct sockaddr *)&server,
 		sizeof(struct sockaddr))==-1){ 
@@ -264,10 +263,11 @@ int main(int argc, char *argv[]){
 				printf("No recibí confirmación\n");
 			}else{
 				//Imprimo mensaje de éxito
-				printf("\n\tFecha\t\tHora\t\top\tcódigo\n");
+				printf("\n\tFecha\t\tHora\t\top\tcódigo\tmonto\n");
 				printf("\t%s ",output);
 				printf("\t%s ",op);
-				printf("\t%d\n",codigoUsuario);
+				printf("\t%d",codigoUsuario);
+				printf("\t%d",monto);
 				printf("\n\n\t\t\tFinalizado Exitosamente\t\t\n\n");
 			}
 	
