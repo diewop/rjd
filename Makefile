@@ -1,4 +1,4 @@
 main:
-		gcc -o cliente cliente.c
-		gcc -o servidor servidor.c
+		gcc -o bsb_cli cliente.c
+		gcc -o bsb_svr servidor.c
 
