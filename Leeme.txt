@@ -9,16 +9,19 @@
 	* cliente.c    (programa del cliente)
 	* servidor.c   (programa del servidor)
 	* Makefile
-	* Leeme.txt    (README.md pero en formato txt)     
+	* Leeme.txt    (README.md pero en formato txt)
+	* README.md    (Explicación de los programas y sus condiciones asociadas)     
 
 
 ##Descripción ¿Qué hace el programa?
 
 ### Cliente.c
-	Es el programa que representa a los cajeros de tipo Full. Permite que un usuario retire o deposite dinero. 
+	Es el programa que representa a los cajeros de tipo Full. 
+	Permite que un usuario retire o deposite dinero. 
 	
-### ¿Cómo se ejecuta?
-	bsb_cli -d ip_server  -p port_bsb_svr -c op monto -i codigoUsuario -n nombreCajero
+#### ¿Cómo se ejecuta?
+	bsb_cli -d ip_server  -p port_bsb_svr -c op monto -i codigoUsuario 
+-n nombreCajero
 	
 #### Argumentos del cliente
 	**No son opcionales**
@@ -32,7 +35,10 @@
 	fecha hora Op codigoUsuario monto
 
 ### Servidor.c
-	Es el programa servidor, representa a una Computadora Central. En esta computadora están los usuarios válidos, el Total Disponible por cajero, y las transacciones que han sido realizadas. Es el encargado de mantener registro sobre las transacciones.
+	Es el programa servidor, representa a una Computadora Central. 
+	En esta computadora están los usuarios válidos, el Total Disponible por 
+	cajero, y las transacciones que han sido realizadas. Es el encargado de 
+	mantener registro sobre las transacciones.
 	
 #### ¿Cómo se ejecuta?
 	bsb_svr -l port_bsb_svr - i bitacora_deposito -o bitacora_retiro
@@ -55,10 +61,14 @@
 	dirá al usuario: "Dinero No Disponible" y le envía al servidor
 	"Necesito recarga". Para la siguiente vez que se llame a ese cajero estará
 	recargado.
-	2. Se añadió en el argumento "-c" op, el monto, para que representará una operación de cajero. Asimismo, se añadió  el argumento -n nombre del cajero, para perservar los distintos cajeros(CB1,CB2,EME). Solo aceptará esos cajeros.
+	2. Se añadió en el argumento "-c" op, el monto, para que representará una 
+	operación de cajero. Asimismo, se añadió  el argumento -n nombre del cajero, 
+	para perservar los distintos cajeros(CB1,CB2,EME). Solo aceptará esos cajeros.
 	3. Se añadió en la impresión del cajero, el monto.
 	4. Se añadió en la impresión del CC el monto y si fue exitoso o no.
 	5. El código del Usuario es un número entero, por lo tanto 0123 es igual a 123.
-	6. Tanto el monto como el código no pueden ser letras, el número cero no es un código válido. (Usamos una librería que devuelve cero si no es un número, por ello no podemos utilizar el cero).
+	6. Tanto el monto como el código no pueden ser letras, el número cero no es 
+	un código válido. (Usamos una librería que devuelve cero si no es un número, 
+	por ello no podemos utilizar el cero).
 
 
