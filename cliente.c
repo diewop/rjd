@@ -26,7 +26,7 @@ int main(int argc, char *argv[]){
 	char * nombreCajero;
 	char * str=malloc(sizeof(char)*400);
 	char * it=malloc(sizeof(char)*400);
-	int totalDisponible = 80000;
+	long long totalDisponible = 80000;
 	/*
 	* Extrayendo argumentos:
 	* -p port_bsb_svr (puerto del servidor)
@@ -142,7 +142,7 @@ int main(int argc, char *argv[]){
 	
 	}
 	totalDisponible = atoi(buf);
-	if(totalDisponible>5000 || (!strcmp(op,"d"))){
+	if(totalDisponible>5000 || (strcmp(op,"d"))){
 		//Bienvenido
 		printf("Cajero Total Disponible: %s\n",buf);
 	
