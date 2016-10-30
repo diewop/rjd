@@ -240,14 +240,7 @@ int main(int argc, char *argv[]){
 			buf[numbytes]='\0';
 			//printf("%s\n",buf);
 	
-			time_t tiempo = time(0);
-			struct tm *tlocal = localtime(&tiempo);
-			char output[128];
-			printf("\n\tFecha\t\tHora\t\top\tcódigo\n");
-			strftime(output,128,"%d/%m/%y\t%H:%M:%S",tlocal);
-			printf("\t%s ",output);
-			printf("\t%s ",op);
-			printf("\t%d\n",codigoUsuario);
+
 			
 			//Envio Confirmación
 			strcpy(str,"He realizado la operación");
@@ -262,16 +255,20 @@ int main(int argc, char *argv[]){
 					}
 				}
 			}
-
+			
+			char output[128];
 			//Recibo Confirmación final
 			//OJO REVISAR BLOQUEANTE
-			if ((numbytes=recv(fd, buf, MAXDATASIZE, 0)) == -1){  
+			if ((numbytes=recv(fd, output, 128, 0)) == -1){  
 			/* llamada a recv() */
 				printf("No recibí confirmación\n");
 			}else{
 				//Imprimo mensaje de éxito
-				buf[numbytes]='\0';
-				printf("\n\n\t\t%s\n",buf);
+				printf("\n\tFecha\t\tHora\t\top\tcódigo\n");
+				printf("\t%s ",output);
+				printf("\t%s ",op);
+				printf("\t%d\n",codigoUsuario);
+				printf("\n\n\t\t\tFinalizado Exitosamente\t\t\n\n");
 			}
 	
 		}else{

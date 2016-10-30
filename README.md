@@ -29,7 +29,7 @@
 	fecha hora Op codigoUsuario
 
 #### Impresión del Central
-	fecha hora codigoUsuario cajero Op monto TotalDisponible
+	fecha hora codigoUsuario cajero Op monto TotalDisponible ¿Fue Exitoso?
 
 ### Decisiones
 	1. Si el total disponible del cajero es menor o igual a 5000, entonces

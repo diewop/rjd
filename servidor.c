@@ -20,7 +20,7 @@ struct cajero {
 	long long	  totalDisponible;
 };
 
-// Estructura del registro
+/*// Estructura del registro
 struct registro {
 	char fecha[24];
 	char hora[24];
@@ -31,7 +31,7 @@ struct registro {
 	char evento[2];
 	struct registro * next;
 };
-
+*/
 
 
 struct usuario {
@@ -77,6 +77,9 @@ int main(int argc, char *argv[]){
 	long long totalDisponible = 0;
 	char * str=malloc(sizeof(char)*400);
 	int monto =0 ;
+	char exitoso[4];
+	strcpy(exitoso,"NO");
+	FILE * fdR, * fdD;//Descriptores para (..R)retiros y (..D)depositos
 	/*
 	* -l port_bsb_svr (puerto del servidor)
 	* -i bitacora_deposito (Ruta del archivo donde estarán los depositos)
@@ -90,12 +93,12 @@ int main(int argc, char *argv[]){
 			if(!strcmp("-i",argv[i])){
 			bitacora_deposito = malloc(sizeof(char)*strlen(argv[i+1]));
 			bitacora_deposito = argv[i+1];
-			//printf("\nBitacora Dep %s\n",bitacora_deposito);
+			printf("\nBitacora Dep %s\n",bitacora_deposito);
 			}else{
 				if(!strcmp("-o",argv[i])){
 					bitacora_retiro = malloc(sizeof(char)*strlen(argv[i+1]));
 					bitacora_retiro = argv[i+1];
-					//printf("\nBitacora Ret %s\n",bitacora_retiro);
+					printf("\nBitacora Ret %s\n",bitacora_retiro);
 				}
 			}
 		
@@ -103,7 +106,28 @@ int main(int argc, char *argv[]){
 		i = i + 1;
 	}// end while
 
-
+	//Asignando los descriptores correspondientes
+	if((fdR = fopen ( bitacora_retiro, "w+" ))==NULL){
+		perror("Error de Entrada y Salida");
+		exit(-1);
+	};
+	
+	if((fdD = fopen ( bitacora_deposito, "w+" ))==NULL){
+		perror("Error de Entrada y Salida");
+		exit(-1);
+	};
+	
+	
+	if(fprintf(fdD,"%s","Fecha\t\tHora\t\tcódigo\tcajero\top\tmonto\tTotalDisponible\t¿Fue Exitoso?\n")==-1){
+		perror("What:? );");
+		exit(-1);
+	}
+	fflush(fdD);  //Prints to a file
+	if(fprintf(fdR,"%s","Fecha\t\tHora\t\tcódigo\tcajero\top\tmonto\tTotalDisponible\t¿Fue Exitoso?\n")==-1){
+		perror("What:? );");
+		exit(-1);
+	}
+	fflush(fdR);
 	
 	/*Tres Cajeros, EME, CB1 CB2*/
 	struct cajero CB1;
@@ -128,7 +152,8 @@ int main(int argc, char *argv[]){
 
 
 	
-	int fd, fd2; /* los ficheros descriptores */
+	int fd, fd2; //Descriptores de Archivos para los sockets*/
+
 
 	struct sockaddr_in server; 
 	/* para la información de la dirección del servidor */
@@ -168,10 +193,7 @@ int main(int argc, char *argv[]){
 		perror("error en listen()\n");
 		exit(-1);
 	}
-	char quien = 0; // Para guardar si paso por EME(3), CB1(1), CB2(2)
-	char caj [3]; //Para guardar el nombre de la caja
 	
-	struct usuario * user;
 	while(1){
 		sin_size=sizeof(struct sockaddr_in);
 		//Accept permitirá que algún cliente se conecte tras utilizar la función connect()
@@ -279,11 +301,8 @@ int main(int argc, char *argv[]){
 			
 						//Envio de Confirmación
 						if(send(fd2,"OK\n", 25, 0) == -1){
-						printf("Erro\n");
 							if(send(fd2,"OK\n", 25, 0) == -1){
-											printf("Erro2\n");
 								if(send(fd2,"OK\n", 25, 0) == -1){
-												printf("Erro3\n");
 									perror(" error en send. Cliente perdido \n");
 									close(fd2);
 								}
@@ -340,43 +359,59 @@ int main(int argc, char *argv[]){
 						}
 			
 			
+			
 						//Recibo Estado
 						if((numbytes=recv(fd2, buf, MAXDATASIZE, 0)) == -1){
 							/* llamada a recv() */
 							if(!strcmp(str,"d")){
-								aux->totalDisponible = aux->totalDisponible - monto;
+								strcpy(exitoso,"NO");
 							}else{
-								aux->totalDisponible = aux->totalDisponible + monto;
+								strcpy(exitoso,"NO");
 							}
 							perror(" error en recv \n");
 							exit(-1);
 						}
 						buf[numbytes]='\0';
 						printf("Estado %s\n",buf);
+						strcpy(exitoso,"SÍ");
 			
-						//MENSAJE DE ÉXITO
-						if(send(fd2,"Mensaje Éxito\n", 25, 0) == -1){
-							if(send(fd2,"Mensaje Éxito\n", 25, 0) == -1){
-								if(send(fd2,"Mensaje Éxito\n", 25, 0) == -1){
-									perror(" error en send. Cliente perdido \n");
-									close(fd2);
-								}
-							}
-						}
+	
 						userAux->intentos += 1;
 						
 						time_t tiempo = time(0);
 						struct tm * tlocal = localtime(&tiempo);
 						char output[128];
-						printf("\n Fecha\t\tHora\t\tcódigo\tcajero\top\tmonto\tTotalDisponible\n");
 						strftime(output,128,"%d/%m/%y\t%H:%M:%S",tlocal);
-						printf(" %s ",output);
-						printf("\t%d",userAux->codigo);
-						printf("\t%s ",aux->id);
-						printf("\t%s ",str);
-						printf("\t%d ",monto);
-						printf("\t%lld\n",aux->totalDisponible);
-
+						if(!strcmp(str,"r")){
+							fprintf(fdR," %s ",output);
+							fprintf(fdR,"\t%d",userAux->codigo);
+							fprintf(fdR,"\t%s ",aux->id);
+							fprintf(fdR,"\t%s ",str);
+							fprintf(fdR,"\t%d ",monto);
+							fprintf(fdR,"\t%lld",aux->totalDisponible);
+							fprintf(fdR,"\t\t\t%s\n",exitoso);
+							fflush(fdR); 
+						}else{
+							fprintf(fdD," %s ",output);
+							fprintf(fdD,"\t%d",userAux->codigo);
+							fprintf(fdD,"\t%s ",aux->id);
+							fprintf(fdD,"\t%s ",str);
+							fprintf(fdD,"\t%d ",monto);
+							fprintf(fdD,"\t%lld",aux->totalDisponible);
+							fprintf(fdD,"\t\t\t%s\n",exitoso);
+							fflush(fdD); 
+						
+						}
+			
+						//MENSAJE DE ÉXITO
+						if(send(fd2,output, 25, 0) == -1){
+							if(send(fd2,output, 25, 0) == -1){
+								if(send(fd2,output, 25, 0) == -1){
+									perror(" error en send. Cliente perdido \n");
+									close(fd2);
+								}
+							}
+						}
 						
 						
 					}
@@ -386,7 +421,8 @@ int main(int argc, char *argv[]){
 		printf("\n\n\t\tMensaje Final\t\t\n");
 		cajeroV = 0;
 	}//While
-		
+	fclose(fdR);
+	fclose(fdD);
 		
 	return 0;
 
