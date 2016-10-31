@@ -93,12 +93,12 @@ int main(int argc, char *argv[]){
 			if(!strcmp("-i",argv[i])){
 			bitacora_deposito = malloc(sizeof(char)*strlen(argv[i+1]));
 			bitacora_deposito = argv[i+1];
-			printf("\nBitacora Dep %s\n",bitacora_deposito);
+			//printf("\nBitacora Dep %s\n",bitacora_deposito);
 			}else{
 				if(!strcmp("-o",argv[i])){
 					bitacora_retiro = malloc(sizeof(char)*strlen(argv[i+1]));
 					bitacora_retiro = argv[i+1];
-					printf("\nBitacora Ret %s\n",bitacora_retiro);
+					//printf("\nBitacora Ret %s\n",bitacora_retiro);
 				}
 			}
 		
@@ -119,12 +119,12 @@ int main(int argc, char *argv[]){
 	
 	
 	if(fprintf(fdD,"%s","Fecha\t\tHora\t\tcódigo\tcajero\top\tmonto\tTotalDisponible\t¿Fue Exitoso?\n")==-1){
-		perror("What:? );");
+		perror("Error al escribir");
 		exit(-1);
 	}
 	fflush(fdD);  //Prints to a file
 	if(fprintf(fdR,"%s","Fecha\t\tHora\t\tcódigo\tcajero\top\tmonto\tTotalDisponible\t¿Fue Exitoso?\n")==-1){
-		perror("What:? );");
+		perror("Error al escribir");
 		exit(-1);
 	}
 	fflush(fdR);
@@ -202,7 +202,7 @@ int main(int argc, char *argv[]){
 			exit(-1);
 		
 		}
-		printf("Connection from %s accepted \n", inet_ntoa(client.sin_addr) ); 
+		printf("\n\n\tConnection from %s accepted \n", inet_ntoa(client.sin_addr) ); 
 		/* que mostrará la IP del cliente */
 			 
 		if((numbytes=recv(fd2, buf, MAXDATASIZE, 0)) == -1){
@@ -218,7 +218,7 @@ int main(int argc, char *argv[]){
 						perror("error de envío, cliente perdido");
 						close(fd2);
 					}
-					printf("Cajero Inválido: %s\n",buf);
+					printf("\tCajero Inválido: %s\n",buf);
 				}else{
 					cajeroV = 1;
 					aux = &CB2; // Basico II
@@ -235,7 +235,7 @@ int main(int argc, char *argv[]){
 		
 		buf[numbytes] = '\0';
 
-		printf("%s\n",buf);
+		printf("\tCajero: %s\n",buf);
 		if(cajeroV){
 			//Envío el totalDisponible que tenía
 			sprintf(str,"%lli",aux->totalDisponible);
@@ -262,10 +262,10 @@ int main(int argc, char *argv[]){
 			else{
 				if(!strcmp(buf,"Monto Por Encima")){
 					buf[numbytes]='\0';
-					printf("Monto inválido %s\n",buf);
+					printf("\tMonto inválido: %s\n",buf);
 				}else{
 					userAux = searchLista(lista,buf);
-					
+					printf("\tUsuario: %d \n",userAux->codigo);
 					//Envio de Usuario Válido			
 					if(send(fd2,"Usuario Válido\n", 25, 0) == -1){
 						if(send(fd2,"Usuario Válido\n", 25, 0) == -1){
@@ -275,7 +275,7 @@ int main(int argc, char *argv[]){
 							}
 						}
 					}
-					printf("Envié Usuario Válido\n");
+					//printf("Envié Usuario Válido\n");
 					//Recibo Operación
 					if((numbytes=recv(fd2, buf, MAXDATASIZE, 0)) == -1){
 						/* llamada a recv() */
@@ -283,12 +283,12 @@ int main(int argc, char *argv[]){
 						exit(-1);
 					}
 					buf[numbytes]='\0';
-					printf("Tipo de operación %s\n",buf);
+					printf("\tTipo de operación %s\n",buf);
 					
 					//Número de intentos máximos
 					//printf("\n\nNúmero de Intentos: %d**\n\n",userAux->intentos);
 					if((userAux->intentos > MAX_INTENTOS) & (!strcmp(buf,"r"))){
-						printf("Usuario ha alcanzado máximo Número de retiros\n");
+						printf("\tUsuario ha alcanzado máximo Número de retiros\n");
 						if(send(fd2,"MAX_ALC\n", 25, 0) == -1){
 							if(send(fd2,"OK\n", 25, 0) == -1){
 								if(send(fd2,"MAX_ALC\n", 25, 0) == -1){
@@ -308,7 +308,7 @@ int main(int argc, char *argv[]){
 								}
 							}
 						}
-						printf("Envié OK\n");
+						//printf("Envié OK\n");
 			
 						strcpy(str,buf); //Tipo de Operación;
 					
@@ -322,7 +322,7 @@ int main(int argc, char *argv[]){
 						}
 			
 						buf[numbytes]='\0';
-						printf("Monto %s\n",buf);
+						printf("\tMonto: %s\n",buf);
 						monto = atoi(buf);
 						if(!strcmp(str,"r")){
 							if(aux->totalDisponible<=5000){
@@ -372,7 +372,7 @@ int main(int argc, char *argv[]){
 							exit(-1);
 						}
 						buf[numbytes]='\0';
-						printf("Estado %s\n",buf);
+						printf("\tEstado: %s\n",buf);
 						strcpy(exitoso,"SÍ");
 			
 	
@@ -418,7 +418,7 @@ int main(int argc, char *argv[]){
 				}//Número de intentos máximos alcanzados
 			}//En caso que necesita recarga o sobrepase
 		}//Cierre de CajeroV
-		printf("\n\n\t\tMensaje Final\t\t\n");
+		printf("\n\n\t\tFinalizado\t\t\n\n");
 		cajeroV = 0;
 	}//While
 	fclose(fdR);
