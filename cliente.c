@@ -69,7 +69,14 @@ int main(int argc, char *argv[]){
 		i = i + 1;
 	}// end while
 
-
+	/* Si el codigoUsuario es 0, se devuelve un mensaje de codigo
+	invalido y se cierra el programa. */
+	if (codigoUsuario == 0) {
+		printf("Codigo de Usuario invalido\n Sesion terminada\n");
+		return 1;
+	}// end if
+	
+	
 	int fd, numbytes;       
 	/* ficheros descriptores */
 
