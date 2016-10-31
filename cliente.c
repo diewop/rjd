@@ -76,6 +76,13 @@ int main(int argc, char *argv[]){
 		return 1;
 	}// end if
 	
+	/* Si el monto es 0 o menor, se devuelve un mensaje de codigo
+	invalido y se cierra el programa. */
+	if (monto < 0) {
+		printf("Monto inválido\n");
+		return 1;
+	}// end if
+	
 	
 	int fd, numbytes;       
 	/* ficheros descriptores */
