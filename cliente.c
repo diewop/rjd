@@ -39,22 +39,18 @@ int main(int argc, char *argv[]){
 	while(i<argc){
 		if (!strcmp("-p",argv[i])){
 			port_bsb_svr = atoi(argv[i+1]);
-			//printf("\nPort %d\n",port_bsb_svr);
 		}else{
 			if(!strcmp("-d",argv[i])){
 			ip_server = malloc(sizeof(char)*strlen(argv[i+1]));
 			ip_server = argv[i+1];
-			//printf("\nBitacora Dep %s\n",bitacora_deposito);
 			}else{
 				if(!strcmp("-c",argv[i])){
 					op = malloc(sizeof(char)*strlen(argv[i+1]));
 					op = argv[i+1];
 					monto = atoi(argv[i+2]);
-					//printf("\nBitacora Ret %s\n",bitacora_retiro);
 				}else{
 					if(!strcmp("-i",argv[i])){
 						codigoUsuario = atoi(argv[i+1]);
-						//printf("\nBitacora Ret %s\n",bitacora_retiro);
 					}else{
 						if(!strcmp("-n",argv[i])){
 							nombreCajero = malloc(sizeof(char)*strlen(argv[i+1]));
@@ -158,9 +154,6 @@ int main(int argc, char *argv[]){
 	totalDisponible = atoi(buf);
 	if(( monto<=3000 ) | (!strcmp(op,"d"))){
 		if(totalDisponible>5000 | (!strcmp(op,"d") )){
-			//Bienvenido
-			//printf("Cajero Total Disponible: %s\n",buf);
-	
 			//Envio Codigo Usuario
 			sprintf(it, "%d", codigoUsuario);
 			strcpy(str,it);
@@ -176,8 +169,6 @@ int main(int argc, char *argv[]){
 				}
 			}
 	
-			//printf("Codigo Usuario: %s\n",it);
-
 			//Recibo Validez Usuario
 			if ((numbytes=recv(fd, buf, MAXDATASIZE, 0)) == -1){  
 				/* llamada a recv() */
@@ -191,8 +182,7 @@ int main(int argc, char *argv[]){
 			}
 			
 			buf[numbytes]='\0';
-			//printf("%s\n",buf);
-	
+
 			//Envio Operación
 			strcpy(str,op);
 			strcat(str,"\0");
@@ -220,7 +210,6 @@ int main(int argc, char *argv[]){
 	
 			}
 			buf[numbytes]='\0';
-			//printf("%s",buf);
 	
 			//Envío Monto
 			sprintf(it, "%d", monto);
@@ -251,9 +240,6 @@ int main(int argc, char *argv[]){
 			}
 	
 			buf[numbytes]='\0';
-			//printf("%s\n",buf);
-	
-
 			
 			//Envio Confirmación
 			strcpy(str,"He realizado la operación");
@@ -271,7 +257,7 @@ int main(int argc, char *argv[]){
 			
 			char output[128];
 			//Recibo Confirmación final
-			//OJO REVISAR BLOQUEANTE
+
 			if ((numbytes=recv(fd, output, 128, 0)) == -1){  
 			/* llamada a recv() */
 				printf("No recibí confirmación\n");
@@ -315,7 +301,7 @@ int main(int argc, char *argv[]){
 		
 	}
 	
-	close(fd);   /* cerramos fd =) */
+	close(fd);   /* cerramos fd */
 	/*Impresión mensaje*/
 	
 	return 0;

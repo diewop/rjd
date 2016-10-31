@@ -20,20 +20,6 @@ struct cajero {
 	long long	  totalDisponible;
 };
 
-/*// Estructura del registro
-struct registro {
-	char fecha[24];
-	char hora[24];
-	int	usuario; 
-	struct cajero atm;
-	long long totalDisponible;
-	char exitoso[2];
-	char evento[2];
-	struct registro * next;
-};
-*/
-
-
 struct usuario {
 	int codigo;
 	char intentos;
@@ -88,17 +74,14 @@ int main(int argc, char *argv[]){
 	while(i<argc){
 		if (!strcmp("-l",argv[i])){
 			port_bsb_svr = atoi(argv[i+1]);
-			//printf("\nPort %d\n",port_bsb_svr);
 		}else{
 			if(!strcmp("-i",argv[i])){
 			bitacora_deposito = malloc(sizeof(char)*strlen(argv[i+1]));
 			bitacora_deposito = argv[i+1];
-			//printf("\nBitacora Dep %s\n",bitacora_deposito);
 			}else{
 				if(!strcmp("-o",argv[i])){
 					bitacora_retiro = malloc(sizeof(char)*strlen(argv[i+1]));
 					bitacora_retiro = argv[i+1];
-					//printf("\nBitacora Ret %s\n",bitacora_retiro);
 				}
 			}
 		
@@ -275,7 +258,6 @@ int main(int argc, char *argv[]){
 							}
 						}
 					}
-					//printf("Envié Usuario Válido\n");
 					//Recibo Operación
 					if((numbytes=recv(fd2, buf, MAXDATASIZE, 0)) == -1){
 						/* llamada a recv() */
@@ -286,7 +268,6 @@ int main(int argc, char *argv[]){
 					printf("\tTipo de operación %s\n",buf);
 					
 					//Número de intentos máximos
-					//printf("\n\nNúmero de Intentos: %d**\n\n",userAux->intentos);
 					if((userAux->intentos > MAX_INTENTOS) & (!strcmp(buf,"r"))){
 						printf("\tUsuario ha alcanzado máximo Número de retiros\n");
 						if(send(fd2,"MAX_ALC\n", 25, 0) == -1){
@@ -308,11 +289,8 @@ int main(int argc, char *argv[]){
 								}
 							}
 						}
-						//printf("Envié OK\n");
-			
+		
 						strcpy(str,buf); //Tipo de Operación;
-					
-					
 					
 						//Recibo Monto
 						if((numbytes=recv(fd2, buf, MAXDATASIZE, 0)) == -1){
@@ -326,7 +304,7 @@ int main(int argc, char *argv[]){
 						monto = atoi(buf);
 						if(!strcmp(str,"r")){
 							if(aux->totalDisponible<=5000){
-								//No debería pasar estp
+								//No debería pasar esto
 								if(send(fd2,"No suficiente\n", 25, 0) == -1){
 									perror(" error en send. Cliente perdido \n");
 									close(fd2);
@@ -420,11 +398,10 @@ int main(int argc, char *argv[]){
 		}//Cierre de CajeroV
 		printf("\n\n\t\tFinalizado\t\t\n\n");
 		cajeroV = 0;
-	}//While
+	}// end while
 	fclose(fdR);
 	fclose(fdD);
 		
 	return 0;
 
 }
-
